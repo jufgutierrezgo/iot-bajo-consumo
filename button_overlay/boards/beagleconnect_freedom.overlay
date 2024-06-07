@@ -5,9 +5,9 @@
  
 	   buttoncus: buttoncus {
  
-		  gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
+		  gpios = <&gpio0 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
  
-		  label = "My custom GPIO";
+		  label = "My custom button";
  
 	   };
  
