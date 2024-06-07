@@ -1,0 +1,21 @@
+// /{
+// 	custom_gpios {
+ 
+// 	   compatible = "gpio-keys";
+ 
+// 	   buttoncus: buttoncus {
+ 
+// 		  gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
+ 
+// 		  label = "My custom GPIO";
+ 
+// 	   };
+ 
+// 	};
+ 
+// 	aliases {
+ 
+// 	mycusbutton = &buttoncus;
+// 	};
+ 
+//  };
