@@ -25,11 +25,11 @@
 #include <zephyr/linker/sections.h>
 #include <zephyr/net/net_core.h>
 #include <zephyr/net/net_mgmt.h>
-
+#include <zephyr/logging/log.h>
 #include <math.h>
 
 #define LOG_LEVEL LOG_LEVEL_INF
-#include <zephyr/logging/log.h>
+
 LOG_MODULE_REGISTER(sensortest);
 
 #define MCAST_IP6ADDR "ff84::2"
@@ -60,17 +60,14 @@ struct led_work {
 static void sensor_work_handler(struct k_work *work);
 
 static const char *device_labels[NUM_DEVICES] = {
-	[BUTTON] = DT_PROP(DT_ALIAS(sw0), label),
+	[BUTTON] = "BUTTON",
 	[LIGHT] = "LIGHT",
-	[ACCEL] = "ACCEL",
 	[HUMIDITY] = "HUMIDITY",
 };
 
 static const char *device_names[NUM_DEVICES] = {
-	[BUTTON] = DEVICE_DT_NAME(DT_GPIO_CTLR(DT_ALIAS(sw0), gpios)),
-	[LIGHT] = "OPT3001-LIGHT",
-	[ACCEL] = "LIS2DE12-ACCEL",
-	[HUMIDITY] = "HDC2010-HUMIDITY",
+	[LIGHT] = "opt3001-light@44",
+	[HUMIDITY] = "hdc2010-humidity@41",
 };
 
 static const uint8_t device_pins[NUM_DEVICES] = {
@@ -85,6 +82,11 @@ static const enum api apis[NUM_DEVICES] = {
 };
 
 static struct device *devices[NUM_DEVICES];
+
+static struct led_work led_work;
+K_WORK_DEFINE(sensor_work, sensor_work_handler);
+static struct gpio_callback button_callback_data;
+static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
 
 static int fd = -1;
 
