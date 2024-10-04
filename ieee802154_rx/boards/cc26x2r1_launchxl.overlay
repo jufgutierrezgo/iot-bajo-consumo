@@ -1,0 +1,11 @@
+/ {
+	chosen {
+		zephyr,ieee802154 = &ieee802154;		
+	};
+};
+
+&ieee802154 {
+	status = "okay";
+};
+
+
