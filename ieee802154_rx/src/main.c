@@ -11,28 +11,11 @@
 
 #define IEEE802154_CHANNEL 11  // Set the channel to your network's channel
 #define IEEE802154_PAN_ID 0xABCD // Example PAN ID
-#define IEEE802154_SHORT_ADDR 0x1230 // Example short address
+#define IEEE802154_SHORT_ADDR 0x7777 // Example short address
 
 // LOG_MODULE_REGISTER(ieee802154, LOG_LEVEL_DBG);
 // LOG_MODULE_REGISTER(ieee802154_cc13xx_cc26xx, LOG_LEVEL_DBG);
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
-
-struct ieee802154_rx_data {
-    uint8_t len;
-    uint8_t raw_data[128];
-};
-
-extern struct ieee802154_rx_data rx_data_store;
-
-void print_received_data_from_ieee802154_driver(void)
-{
-    printk("Received packet length: %d\n", rx_data_store.len);
-    printk("Received raw data: ");
-    for (int i = 0; i < rx_data_store.len; i++) {
-        printk("%02x ", rx_data_store.raw_data[i]);
-    }
-    printk("\n");
-}
 
 // Function to process a received packet
 void process_packet(struct net_pkt *pkt)
@@ -42,14 +25,14 @@ void process_packet(struct net_pkt *pkt)
 
     for (frag = pkt->frags; frag; frag = frag->frags) {
         total_len += frag->len;
-        printk("Fragment Length: %d\n", frag->len);
-        printk("Fragment Data: ");
+        printk("Frag. Length: %d\n", frag->len);
+        printk("Frag Data: ");
         for (size_t i = 0; i < frag->len; i++) {
             printk("%02x ", frag->data[i]);
         }
         printk("\n");
     }
-    printk("Total packet length: %zu bytes\n", total_len);
+    printk("Total pkt length: %zu bytes\n", total_len);
 
     net_pkt_unref(pkt);
 }
@@ -81,6 +64,15 @@ void configure_ieee802154(struct net_if *iface)
     }
 
     printk("IEEE 802.15.4 PAN ID, short address, and channel configured.\n");
+
+    int ret = net_promisc_mode_on(iface);
+	if (ret < 0) {
+		LOG_INF("Cannot set promiscuous mode for interface %p (%d)",
+			iface, ret);
+		return;
+	}
+
+	LOG_INF("Promiscuous mode enabled for interface %p", iface);
 }
 
 void print_iface_info(struct net_if *iface) {
@@ -103,25 +95,12 @@ void print_iface_info(struct net_if *iface) {
     }
     printk("\n");
 
-    // Print the type of the interface
-    // printk("Interface type: %d\n", iface->if_dev->l2->type);
-
     // Print if the interface is up or down
     if (net_if_is_up(iface)) {
         printk("Interface is up\n");
     } else {
         printk("Interface is down\n");
     }
-
-    // Print whether the interface is a point-to-point (P2P) interface
-    if (net_if_flag_is_set(iface, NET_IF_POINTOPOINT)) {
-        printk("Interface is point-to-point\n");
-    } else {
-        printk("Interface is not point-to-point\n");
-    }
-
-    // Print the MTU (Maximum Transmission Unit)
-    printk("MTU: %d bytes\n", net_if_get_mtu(iface));
 }
 
 void main(void)
@@ -135,36 +114,22 @@ void main(void)
         printk("No network interface found\n");
         return;
     }
-
-    // printk("%d\n", net_if_up(iface));
     
     // Configure PAN ID and short address
     configure_ieee802154(iface);
+    net_if_up(iface);
 
     print_iface_info(iface);    
 
-    // net_pkt_cursor_init(pkt);
-
-    // Assign the interface to the network packet
-    // net_pkt_set_iface(pkt, iface);
+    printk("Waiting for packets.\n");
 
     // Keep running to receive packets
     while (1) {
-        // Poll for incoming packets on the interface
-        // pkt = net_pkt_alloc(K_NO_WAIT);
-       
-        // net_pkt_read(pkt, data, 25);
-        // pkt = net_pkt_rx_alloc_with_buffer(
-		// 		iface, 25, AF_UNSPEC, 0, K_NO_WAIT);
-        // if (pkt && net_recv_data(iface, pkt) == 0) {
-        //     printk("Packet received on interface: %p\n", iface);
-        //     process_packet(pkt);
-        // } else {
-        //     net_pkt_unref(pkt);
-        // }
+        pkt = net_promisc_mode_wait_data(K_FOREVER);
+		if (pkt) {
+			process_packet(pkt);
+		}
 
-        // print_received_data_from_ieee802154_driver();
-
-        k_sleep(K_MSEC(1000)); // Keep the thread alive
+		net_pkt_unref(pkt);
     }
 }
