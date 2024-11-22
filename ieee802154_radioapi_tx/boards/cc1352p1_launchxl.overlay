@@ -1,0 +1,9 @@
+&i2c0 { 
+	shtcx@70 {
+		compatible = "sensirion,shtcx";
+		reg = <0x70>;
+        label = "SHTCX";
+        chip = "shtc3";
+        measure-mode = "normal";
+	};
+};
