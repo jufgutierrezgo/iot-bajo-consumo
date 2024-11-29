@@ -3,7 +3,7 @@
 #include <zephyr/net/ieee802154_radio.h>
 #include <zephyr/net/net_pkt.h>
 #include <zephyr/sys/printk.h>
-#include <zephyr/random/random.h>
+// #include <zephyr/random/random.h>
 
 LOG_MODULE_REGISTER(radioapi_tx, LOG_LEVEL_DBG);
 
