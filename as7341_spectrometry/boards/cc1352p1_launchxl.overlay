@@ -1,0 +1,31 @@
+&pinctrl {
+
+    /* I2C0 */
+    i2c0_scl_default: i2c0_scl_default {
+        pinmux = <21 IOC_PORT_MCU_I2C_MSSCL>;
+        bias-pull-up;
+        drive-open-drain;
+        input-enable;
+    };
+    i2c0_sda_default: i2c0_sda_default {
+        pinmux = <5 IOC_PORT_MCU_I2C_MSSDA>;
+        bias-pull-up;
+        drive-open-drain;
+        input-enable;
+    };
+ };
+ 
+
+&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>;
+    pinctrl-0 = <&i2c0_scl_default &i2c0_sda_default>;
+    
+    as7341@39 {
+        compatible = "ams,as7341";
+        reg = <0x39>;
+        label = "AS7341";
+    };
+};
+
+
